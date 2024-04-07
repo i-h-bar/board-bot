@@ -119,6 +119,7 @@ class RemovePlayersDropdown(discord.ui.Select):
         super().__init__(placeholder="Kick a player from lobby...", max_values=1, min_values=1, options=options)
 
     async def callback(self, interaction: Interaction):
+        # Add a kicked persons list that gets checked on person attempting to rejoin with an except / decline / ban
         if len(self.lobby.players) <= 1:
             # Instead of removing last person from lobby close the game (Make a cleanup game function)
             pass
