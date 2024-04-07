@@ -6,7 +6,8 @@ from discord.ui import View
 
 from bot.const.games import GAMES
 from bot.lobby import Lobby
-from bot.lobby.buttons import JoinLobbyButton, LeaveLobbyButton, StartGameButton
+from bot.lobby.buttons import JoinLobbyButton, LeaveLobbyButton
+from bot.lobby.admin_ctrl import CancelGameButton, StartGameButton
 
 
 class GameSelect(discord.ui.Select):
@@ -41,6 +42,8 @@ class GameSelect(discord.ui.Select):
         await interaction.response.send_message(file=lobby.file, embed=lobby, view=view)
 
         start_game = StartGameButton(lobby, interaction)
+        cancel_game = CancelGameButton(lobby, interaction)
         view = View()
         view.add_item(start_game)
+        view.add_item(cancel_game)
         await interaction.user.send("Admin controls:", view=view)

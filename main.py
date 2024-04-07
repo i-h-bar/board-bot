@@ -1,8 +1,9 @@
-import os
 import logging
+import os
+
 import discord
-from discord.interactions import Interaction
 from discord.ext.commands import Bot
+from discord.interactions import Interaction
 from discord.ui import View
 
 from bot.const.games import current_games
@@ -34,4 +35,4 @@ async def play(interaction: Interaction):
 
 
 if __name__ == "__main__":
-    bot.run(os.getenv("GAME_BOT_TOKEN"))
+    bot.run(os.getenv("BOARD_BOT_TOKEN"))
