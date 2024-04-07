@@ -1,14 +1,19 @@
+from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 import discord.errors
 import discord.ui
-from discord import Interaction
+from discord import Interaction, SelectOption
 
+from bot.const.emoji import DEFAULT_EMOJI
 from bot.const.games import current_games
-from bot.lobby import Lobby
 from games.interface.game import GameInterface
+
+if TYPE_CHECKING:
+    from bot.lobby import Lobby
 
 
 class CancelGameButton(discord.ui.Button):
@@ -99,10 +104,27 @@ class StartGameButton(discord.ui.Button):
 
 
 class RemovePlayersDropdown(discord.ui.Select):
-    def __init__(self, lobby: Lobby, lobby_interaction: Interaction):
+    def __init__(self, lobby: Lobby):
         self.lobby = lobby
-        self.lobby_interaction = lobby_interaction
 
-        options = []
+        options = [
+            SelectOption(label=user.display_name, emoji=user.display_icon) for user in self.lobby.players.values()
+        ]
+
+        if not options:
+            options = [
+                SelectOption(label="Empty Lobby :(", emoji=DEFAULT_EMOJI)
+            ]
 
         super().__init__(placeholder="Kick a player from lobby...", max_values=1, min_values=1, options=options)
+
+    async def callback(self, interaction: Interaction):
+        try:
+            choice = self.values[0]
+        except IndexError:
+            return await interaction.response.send_message(
+                "I didn't successfully get the option", ephemeral=True, delete_after=600.0
+            )
+
+        self.lobby.remove_from_lobby(choice)
+        await interaction.response.edit_message(view=self.lobby.admin_controls)

@@ -18,16 +18,14 @@ class JoinLobbyButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        if interaction.user not in self.lobby.players:
+        if interaction.user not in self.lobby.players.values():
             if len(self.lobby.players) >= self.lobby.game.MAX_PLAYERS:
                 return await interaction.response.send_message(
                     "Sorry, the lobby is at it max players for this game. :(", ephemeral=True
                 )
             else:
                 self.lobby.add_to_lobby(interaction.user)
-                await interaction.message.edit(embed=self.lobby)
-
-        await interaction.response.defer()
+                await interaction.response.edit_message(embed=self.lobby)
 
 
 class LeaveLobbyButton(discord.ui.Button):
@@ -40,7 +38,5 @@ class LeaveLobbyButton(discord.ui.Button):
 
     async def callback(self, interaction: Interaction):
         if interaction.user in self.lobby.players:
-            if self.lobby.remove_from_lobby(interaction.user):
-                await interaction.message.edit(embed=self.lobby)
-
-            await interaction.response.defer()
+            if self.lobby.remove_from_lobby(interaction.user.display_name):
+                await interaction.response.edit_message(embed=self.lobby)
