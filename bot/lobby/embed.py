@@ -1,9 +1,9 @@
-from pathlib import Path
 import random
+from pathlib import Path
 from types import ModuleType
 
 import discord
-from discord import User, Member, SelectOption, Interaction
+from discord import User, Member, Interaction
 from discord.ui import View
 
 from bot.lobby.admin_ctrl import RemovePlayersDropdown, StartGameButton, CancelGameButton
