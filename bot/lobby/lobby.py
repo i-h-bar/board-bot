@@ -29,7 +29,7 @@ class Lobby(discord.Embed):
         self.set_image(url=f"attachment://{self.file_name}")
 
     def add_to_lobby(self, user: User | Member):
-        self.add_field(name=random.choice(self.game.EMOJIS), value=user.nick)
+        self.add_field(name=random.choice(self.game.EMOJIS), value=user.nick or user.name)
         self.players.add(user)
 
     def remove_from_lobby(self, user: User | Member) -> bool:
@@ -39,7 +39,7 @@ class Lobby(discord.Embed):
             return False
         else:
             for i, field in enumerate(self.fields):
-                if field.value == user.nick:
+                if field.value == user.nick or field.value == user.name:
                     self.remove_field(i)
                     return True
             else:

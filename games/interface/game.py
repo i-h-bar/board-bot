@@ -4,8 +4,20 @@ from discord import Interaction, User, Member
 
 class GameInterface(abc.ABC):
     @abc.abstractmethod
-    def __init__(self, players: set[User | Member], *args, **kwargs):
+    def __init__(self, players: set[User | Member], interaction: Interaction, *args, **kwargs):
         """Initialise the game interface"""
+        raise NotImplemented
+
+    @property
+    @abc.abstractmethod
+    def players(self) -> set[User | Member]:
+        """Get the players of the game"""
+        raise NotImplemented
+
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        """Get the name of the game"""
         raise NotImplemented
 
     @classmethod

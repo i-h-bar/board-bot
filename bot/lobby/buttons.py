@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from datetime import datetime
 
@@ -6,6 +7,7 @@ from discord import Interaction
 
 from bot.const.emoji import DEFAULT_EMOJI
 from bot.lobby import Lobby
+from games.interface.game import GameInterface
 
 
 class JoinLobbyButton(discord.ui.Button):
@@ -59,23 +61,55 @@ class StartGameButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: Interaction):
-        await self.game.Game.setup_game(interaction, self.lobby.players)
+        if len(self.lobby.players) >= self.game.MIN_PLAYERS:
+            game: GameInterface = await self.game.Game.setup_game(interaction, self.lobby.players)
 
-        await interaction.response.send_message("Game started!")
-        await self.lobby_interation.channel.send("Let the games begin!")
+            try:
+                await interaction.message.delete()
+            except (discord.errors.NotFound, discord.errors.Forbidden, discord.errors.HTTPException) as error:
+                logging.warning(
+                    f"[%s] - Could not delete DM due to - %s",
+                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    str(error)
+                )
 
-        await (await interaction.original_response()).delete()
-        await (await self.lobby_interation.original_response()).delete()
+            try:
+                await (await self.lobby_interation.original_response()).delete()
+            except (discord.errors.NotFound, discord.errors.Forbidden, discord.errors.HTTPException) as error:
+                logging.warning(
+                    f"[%s] - Could not delete previous bot message due to - %s",
+                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    str(error)
+                )
 
-        logging.info(
-            f"[%s] - A game of %s has started in - %s: %s.",
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            self.lobby.name,
-            self.lobby_interation.guild,
-            self.lobby_interation.channel
+            await self.lobby_interation.channel.send("Let the games begin!")
+
+            logging.info(
+                f"[%s] - A game of %s has started in - %s: %s.",
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                self.lobby.name,
+                self.lobby_interation.guild,
+                self.lobby_interation.channel
+            )
+
+            await asyncio.gather(*(player.send(f"Have fun in your game of {game.name}!") for player in game.players))
+            await game.run()
+
+        else:
+            await interaction.response.send_message(
+                f"Not enough player to start {self.lobby.name}; "
+                f"you need {self.lobby.game.MIN_PLAYERS}-{self.lobby.game.MAX_PLAYERS} to start."
+            )
+
+
+class CancelGameButton(discord.ui.Button):
+    def __init__(self, lobby: Lobby, lobby_interaction: Interaction):
+        self.lobby = lobby
+        self.lobby_interation = lobby_interaction
+        self.game = self.lobby.game
+        super().__init__(
+            label=f"Cancel Game!", emoji="💩"
         )
 
-        players = self.lobby.players
-        del self.lobby
-
-        await self.game.Game(players).run()
+    async def callback(self, interaction: Interaction):
+        pass

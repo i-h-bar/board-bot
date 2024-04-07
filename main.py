@@ -5,10 +5,12 @@ from discord.interactions import Interaction
 from discord.ext.commands import Bot
 from discord.ui import View
 
+from bot.const.games import current_games
 from bot.lobby.select import GameSelect
 
 bot = Bot(command_prefix="/", intents=discord.Intents.all())
 logging.getLogger().setLevel(logging.DEBUG)
+
 
 @bot.event
 async def on_ready():
@@ -17,12 +19,18 @@ async def on_ready():
     print("Bot ready")
 
 
-@bot.tree.command(name="play")
+@bot.tree.command(name="play", description="Start playing a board game!")
 async def play(interaction: Interaction):
-    dropdown = GameSelect()
-    view = View()
-    view.add_item(dropdown)
-    await interaction.response.send_message("Pick a game to play...", view=view, ephemeral=True, delete_after=600.0)
+    if interaction.channel not in current_games:
+        current_games.add(interaction.channel)
+        dropdown = GameSelect()
+        view = View()
+        view.add_item(dropdown)
+        await interaction.response.send_message("Pick a game to play...", view=view, ephemeral=True, delete_after=600.0)
+    else:
+        await interaction.response.send_message(
+            "There is already a game being played or organised in this channel!", ephemeral=True, delete_after=60.0
+        )
 
 
 if __name__ == "__main__":
