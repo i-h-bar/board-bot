@@ -45,4 +45,4 @@ class GameSelect(discord.ui.Select):
         view.add_item(leave)
 
         await interaction.response.send_message(file=lobby.file, embed=lobby, view=view)
-        await interaction.user.send("Admin controls:", view=lobby.admin_controls)
+        lobby.admin_message = await interaction.user.send("Admin controls:", view=lobby.admin_controls)

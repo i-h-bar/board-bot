@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import random
 from datetime import datetime
@@ -5,7 +6,7 @@ from pathlib import Path
 from types import ModuleType
 
 import discord
-from discord import User, Member
+from discord import User, Member, Message
 from discord.ui import View
 
 from bot.const.custom_types import Interaction
@@ -24,6 +25,10 @@ class Lobby(discord.Embed):
         self.file = discord.File(
             f"{'/'.join(Path(self.game.__file__).parts[:-1])}/assets/logo.png", filename=self.file_name
         )
+
+        self.kicked_players: dict[str, User] = {}
+        self.banned_players: dict[str, User] = {}
+        self.admin_message: Message | None = None
 
         try:
             url = game.URL
@@ -73,3 +78,17 @@ class Lobby(discord.Embed):
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 str(error)
             )
+
+    async def update_lobby(self):
+        og_msg = await self.interaction.original_response()
+        await og_msg.edit(embed=self)
+
+    async def update_admin_controls(self):
+        if not self.admin_message:
+            logging.warning("[%s] - No admin message has been set", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            return
+
+        await self.admin_message.edit(view=self.admin_controls)
+
+    async def update(self):
+        await asyncio.gather(self.update_lobby(), self.update_admin_controls())
