@@ -2,11 +2,12 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import discord.errors
 import discord.ui
-from discord import SelectOption
+from discord import SelectOption, User
+from discord._types import ClientT
 
 from bot.const.custom_types import Interaction
 from bot.const.emoji import DEFAULT_EMOJI
@@ -105,6 +106,41 @@ class RemovePlayersDropdown(discord.ui.Select):
         await self.lobby.update()
 
         await interaction.response.send_message(f"Removed {choice} from lobby.", delete_after=10)
+
+
+class AdmitKickedPlayerButton(discord.ui.Button):
+    def __init__(self, lobby: Lobby, user: User):
+        self.user = user
+        self.lobby = lobby
+        super().__init__(
+            label=f"Admit to the Lobby", emoji="👍"
+        )
+
+    async def callback(self, interaction: Interaction):
+        if self.user.display_name not in self.lobby.players:
+            if len(self.lobby.players) >= self.lobby.game.MAX_PLAYERS:
+                return await interaction.response.send_message(
+                    "Sorry, the lobby is at it max players for this game. :(", delete_after=10
+                )
+            else:
+                self.lobby.add_to_lobby(self.user)
+                await self.lobby.update()
+                await interaction.response.send_message(
+                    f"{self.user.display_name} allowed back into the lobby", delete_after=10
+                )
+
+
+class BanPlayerButton(discord.ui.Button):
+    def __init__(self, lobby: Lobby, user: User):
+        self.user = user
+        self.lobby = lobby
+        super().__init__(label=f"Ban Player", emoji="💩", style=discord.ButtonStyle.red)
+
+    async def callback(self, interaction: Interaction):
+        self.lobby.banned_players[self.user.display_name] = self.user
+        await interaction.response.send_message(
+            f"{self.user.display_name} has been banned from the lobby", delete_after=10
+        )
 
 
 async def delete_message(interaction: Interaction):
