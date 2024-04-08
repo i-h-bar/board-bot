@@ -1,4 +1,6 @@
+import logging
 import random
+from datetime import datetime
 from pathlib import Path
 from types import ModuleType
 
@@ -34,8 +36,8 @@ class Lobby(discord.Embed):
 
     @property
     def admin_controls(self) -> View:
-        start_game = StartGameButton(self, self.interaction)
-        cancel_game = CancelGameButton(self, self.interaction)
+        start_game = StartGameButton(self)
+        cancel_game = CancelGameButton(self)
         view = View()
         view.add_item(start_game)
         view.add_item(cancel_game)
@@ -59,3 +61,14 @@ class Lobby(discord.Embed):
                     return True
             else:
                 return False
+
+    async def delete(self):
+        try:
+            og_msg = await self.interaction.original_response()
+            await og_msg.delete()
+        except (discord.errors.NotFound, discord.errors.Forbidden, discord.errors.HTTPException) as error:
+            logging.warning(
+                f"[%s] - Could not delete lobby due to - %s",
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                str(error)
+            )

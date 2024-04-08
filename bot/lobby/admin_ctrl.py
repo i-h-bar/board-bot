@@ -17,9 +17,8 @@ if TYPE_CHECKING:
 
 
 class CancelGameButton(discord.ui.Button):
-    def __init__(self, lobby: Lobby, lobby_interaction: Interaction):
+    def __init__(self, lobby: Lobby):
         self.lobby = lobby
-        self.lobby_interation = lobby_interaction
         self.game = self.lobby.game
         super().__init__(
             label=f"Cancel Game!", emoji="💩"
@@ -27,7 +26,7 @@ class CancelGameButton(discord.ui.Button):
 
     async def callback(self, interaction: Interaction):
         try:
-            current_games.remove(self.lobby_interation.channel)
+            current_games.remove(self.lobby.interaction.channel)
         except KeyError:
             pass
 
@@ -40,22 +39,13 @@ class CancelGameButton(discord.ui.Button):
                 str(error)
             )
 
-        try:
-            await (await self.lobby_interation.original_response()).delete()
-        except (discord.errors.NotFound, discord.errors.Forbidden, discord.errors.HTTPException) as error:
-            logging.warning(
-                f"[%s] - Could not delete previous bot message due to - %s",
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                str(error)
-            )
-
-        await self.lobby_interation.channel.send(f"Game cancelled!")
+        await self.lobby.delete()
+        await self.lobby.interaction.channel.send(f"Game cancelled!")
 
 
 class StartGameButton(discord.ui.Button):
-    def __init__(self, lobby: Lobby, lobby_interaction: Interaction):
+    def __init__(self, lobby: Lobby):
         self.lobby = lobby
-        self.lobby_interation = lobby_interaction
         self.game = self.lobby.game
         super().__init__(
             label=f"Start Game!", emoji="👍"
