@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING
 
 import discord.errors
 import discord.ui
-from discord import Interaction, SelectOption
+from discord import SelectOption
 
+from bot.const.custom_types import Interaction
 from bot.const.emoji import DEFAULT_EMOJI
 from bot.const.games import current_games
 from games.interface.game import GameInterface
@@ -64,23 +65,15 @@ class StartGameButton(discord.ui.Button):
                     str(error)
                 )
 
-            try:
-                await (await self.lobby_interation.original_response()).delete()
-            except (discord.errors.NotFound, discord.errors.Forbidden, discord.errors.HTTPException) as error:
-                logging.warning(
-                    f"[%s] - Could not delete previous bot message due to - %s",
-                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    str(error)
-                )
-
-            await self.lobby_interation.channel.send("Let the games begin!")
+            await self.lobby.delete()
+            await self.lobby.interaction.channel.send("Let the games begin!")
 
             logging.info(
                 f"[%s] - A game of %s has started in - %s: %s.",
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 self.lobby.name,
-                self.lobby_interation.guild,
-                self.lobby_interation.channel
+                self.lobby.interaction.guild,
+                self.lobby.interaction.channel
             )
 
             await asyncio.gather(*(player.send(f"Have fun in your game of {game.name}!") for player in game.players))

@@ -1,6 +1,6 @@
 import discord.ui
-from discord import Interaction
 
+from bot.const.custom_types import Interaction
 from bot.const.emoji import DEFAULT_EMOJI
 from bot.lobby import Lobby
 
@@ -17,7 +17,7 @@ class JoinLobbyButton(discord.ui.Button):
             label=f"Play {self.lobby.name}!", emoji=self.button_emoji, style=discord.ButtonStyle.green
         )
 
-    async def callback(self, interaction: discord.Interaction):
+    async def callback(self, interaction: Interaction):
         if interaction.user not in self.lobby.players.values():
             if len(self.lobby.players) >= self.lobby.game.MAX_PLAYERS:
                 return await interaction.response.send_message(

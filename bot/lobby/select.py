@@ -1,13 +1,13 @@
 from types import ModuleType
 
 import discord
-from discord import SelectOption, Interaction
+from discord import SelectOption
 from discord.ui import View
 
+from bot.const.custom_types import Interaction
 from bot.const.games import GAMES
 from bot.lobby import Lobby
 from bot.lobby.buttons import JoinLobbyButton, LeaveLobbyButton
-from bot.lobby.admin_ctrl import CancelGameButton, StartGameButton, RemovePlayersDropdown
 
 
 class GameSelect(discord.ui.Select):

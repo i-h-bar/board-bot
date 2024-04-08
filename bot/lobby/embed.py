@@ -5,9 +5,10 @@ from pathlib import Path
 from types import ModuleType
 
 import discord
-from discord import User, Member, Interaction
+from discord import User, Member
 from discord.ui import View
 
+from bot.const.custom_types import Interaction
 from bot.lobby.admin_ctrl import RemovePlayersDropdown, StartGameButton, CancelGameButton
 
 
