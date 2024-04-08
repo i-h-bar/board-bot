@@ -62,6 +62,11 @@ class LeaveLobbyButton(discord.ui.Button):
             if self.lobby.remove_from_lobby(interaction.user.display_name):
                 await self.lobby.update()
 
-        await interaction.response.send_message(
-            "You have successfully left this lobby.", ephemeral=True, delete_after=600
-        )
+            await interaction.response.send_message(
+                "You have successfully left this lobby.", ephemeral=True, delete_after=600
+            )
+
+        else:
+            await interaction.response.send_message(
+                "You are not in this lobby silly! 😝", ephemeral=True, delete_after=600
+            )
