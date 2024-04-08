@@ -105,6 +105,7 @@ class RemovePlayersDropdown(discord.ui.Select):
         self.lobby.remove_from_lobby(choice)
         await self.lobby.update()
 
+        await self.lobby.kicked_players[choice].send("You have been kicked from the lobby!")
         await interaction.response.send_message(f"Removed {choice} from lobby.", delete_after=10)
 
 
@@ -125,6 +126,8 @@ class AdmitKickedPlayerButton(discord.ui.Button):
             else:
                 self.lobby.add_to_lobby(self.user)
                 await self.lobby.update()
+
+                await self.user.send("You have been allowed back into the lobby! 🙃")
                 await interaction.response.send_message(
                     f"{self.user.display_name} allowed back into the lobby", delete_after=10
                 )
@@ -138,6 +141,7 @@ class BanPlayerButton(discord.ui.Button):
 
     async def callback(self, interaction: Interaction):
         self.lobby.banned_players[self.user.display_name] = self.user
+        await self.user.send("You have been banned from the lobby! 🫢")
         await interaction.response.send_message(
             f"{self.user.display_name} has been banned from the lobby", delete_after=10
         )
