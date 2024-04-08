@@ -31,15 +31,7 @@ class CancelGameButton(discord.ui.Button):
         except KeyError:
             pass
 
-        try:
-            await interaction.message.delete()
-        except (discord.errors.NotFound, discord.errors.Forbidden, discord.errors.HTTPException) as error:
-            logging.warning(
-                f"[%s] - Could not delete DM due to - %s",
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                str(error)
-            )
-
+        await delete_message(interaction)
         await self.lobby.delete()
         await self.lobby.interaction.channel.send(f"Game cancelled!")
 
@@ -56,14 +48,7 @@ class StartGameButton(discord.ui.Button):
         if len(self.lobby.players) >= self.game.MIN_PLAYERS:
             game: GameInterface = await self.game.Game.setup_game(interaction, self.lobby.players)
 
-            try:
-                await interaction.message.delete()
-            except (discord.errors.NotFound, discord.errors.Forbidden, discord.errors.HTTPException) as error:
-                logging.warning(
-                    f"[%s] - Could not delete DM due to - %s",
-                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    str(error)
-                )
+            await delete_message(interaction)
 
             await self.lobby.delete()
             await self.lobby.interaction.channel.send("Let the games begin!")
@@ -104,8 +89,9 @@ class RemovePlayersDropdown(discord.ui.Select):
     async def callback(self, interaction: Interaction):
         # Add a kicked persons list that gets checked on person attempting to rejoin with an except / decline / ban
         if len(self.lobby.players) <= 1:
-            # Instead of removing last person from lobby close the game (Make a cleanup game function)
-            pass
+            await delete_message(interaction)
+            await self.lobby.delete()
+            return await self.lobby.interaction.channel.send(f"Game cancelled!")
 
         try:
             choice = self.values[0]
@@ -116,3 +102,14 @@ class RemovePlayersDropdown(discord.ui.Select):
 
         self.lobby.remove_from_lobby(choice)
         await interaction.response.edit_message(view=self.lobby.admin_controls)
+
+
+async def delete_message(interaction: Interaction):
+    try:
+        await interaction.message.delete()
+    except (discord.errors.NotFound, discord.errors.Forbidden, discord.errors.HTTPException) as error:
+        logging.warning(
+            f"[%s] - Could not delete message due to - %s",
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            str(error)
+        )
