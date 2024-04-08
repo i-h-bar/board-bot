@@ -1,4 +1,4 @@
-import discord.ui
+import discord
 from discord.ui import View
 
 from bot.const.custom_types import Interaction
