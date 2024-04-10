@@ -33,8 +33,8 @@ class CancelGameButton(discord.ui.Button):
             pass
 
         await delete_message(interaction)
-        await self.lobby.delete()
         await self.lobby.interaction.channel.send(f"Game cancelled!")
+        await self.lobby.delete()
 
 
 class StartGameButton(discord.ui.Button):
@@ -48,18 +48,20 @@ class StartGameButton(discord.ui.Button):
     async def callback(self, interaction: Interaction):
         if len(self.lobby.players) >= self.game.MIN_PLAYERS:
             game: GameInterface = await self.game.Game.setup_game(interaction, self.lobby.players)
+            name = self.lobby.name
+            guild = self.lobby.interaction.guild
+            channel = self.lobby.interaction.channel
 
             await delete_message(interaction)
-
-            await self.lobby.delete()
             await self.lobby.interaction.channel.send("Let the games begin!")
+            await self.lobby.delete()
 
             logging.info(
                 f"[%s] - A game of %s has started in - %s: %s.",
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                self.lobby.name,
-                self.lobby.interaction.guild,
-                self.lobby.interaction.channel
+                name,
+                guild,
+                channel
             )
 
             await asyncio.gather(*(player.send(f"Have fun in your game of {game.name}!") for player in game.players))

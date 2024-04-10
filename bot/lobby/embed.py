@@ -78,6 +78,8 @@ class Lobby(discord.Embed):
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 str(error)
             )
+        finally:
+            del self
 
     async def update_lobby(self):
         og_msg = await self.interaction.original_response()
