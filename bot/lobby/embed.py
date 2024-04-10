@@ -34,6 +34,8 @@ class Lobby(discord.Embed):
             url = game.URL
         except AttributeError:
             url = None
+        else:
+            description = f"{description}\n\n Please support the creators of {name} by buying a copy from: {url}"
 
         super().__init__(title=name, description=description, url=url)
         self.set_author(name=admin.display_name)
