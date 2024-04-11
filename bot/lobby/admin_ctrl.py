@@ -90,11 +90,10 @@ class RemovePlayersDropdown(discord.ui.Select):
         super().__init__(placeholder="Kick a player from lobby...", max_values=1, min_values=1, options=options)
 
     async def callback(self, interaction: Interaction):
-        # Add a kicked persons list that gets checked on person attempting to rejoin with an except / decline / ban
-        # if len(self.lobby.players) <= 1:
-        #     await delete_message(interaction)
-        #     await self.lobby.delete()
-        #     return await self.lobby.interaction.channel.send(f"Game cancelled!")
+        if len(self.lobby.players) <= 1:
+            await delete_message(interaction)
+            await self.lobby.interaction.channel.send(f"Game cancelled!")
+            return await self.lobby.delete()
 
         try:
             choice = self.values[0]
