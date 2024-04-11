@@ -1,13 +1,13 @@
 from __future__ import annotations
+
 import asyncio
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import discord.errors
 import discord.ui
 from discord import SelectOption, User
-from discord._types import ClientT
 
 from bot.const.custom_types import Interaction
 from bot.const.emoji import DEFAULT_EMOJI
