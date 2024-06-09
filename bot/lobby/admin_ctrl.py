@@ -11,7 +11,7 @@ from discord import SelectOption, User
 from bot.const.custom_types import Interaction
 from bot.const.emoji import DEFAULT_EMOJI
 from bot.const.games import current_games
-from games.interface.game import GameInterface
+from games.interface import GameInterface
 
 if TYPE_CHECKING:
     from bot.lobby import Lobby
@@ -63,7 +63,7 @@ class StartGameButton(discord.ui.Button):
                 channel
             )
 
-            await asyncio.gather(*(player.send(f"Have fun in your game of {game.name}!") for player in game.players))
+            await asyncio.gather(*(player.send(f"Have fun in your game of {game.name}!") for player in game.players.values()))
             await game.run()
 
         else:

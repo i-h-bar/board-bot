@@ -2,8 +2,7 @@ from pathlib import Path
 
 from discord import Interaction, User, Member
 
-from bot.game import Game
-from games.interface.game import GameInterface
+from games.interface import Game, GameInterface
 from games.secret_hitler.assets.emoji import EMOJIS, SELECT_EMOJI
 
 

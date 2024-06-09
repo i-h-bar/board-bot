@@ -1,4 +1,4 @@
-from bot.game import Game
+from games.interface import Game
 from games.secret_hitler.game import secret_hitler
 
 GAMES: dict[str, Game] = {

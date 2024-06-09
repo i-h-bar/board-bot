@@ -1,17 +1,21 @@
 import abc
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Type
 
 from discord import Interaction, User, Member
 
 
 class GameInterface(abc.ABC):
     @abc.abstractmethod
-    def __init__(self, players: set[User | Member], interaction: Interaction, *args, **kwargs):
+    def __init__(self, players: dict[str, User | Member], interaction: Interaction, *args, **kwargs):
         """Initialise the game interface"""
-        raise NotImplemented
+        self._players: dict[str, User | Member] = players
+        self.interaction = interaction
 
     @property
     @abc.abstractmethod
-    def players(self) -> set[User | Member]:
+    def players(self) -> dict[str, User | Member]:
         """Get the players of the game"""
         raise NotImplemented
 
@@ -23,7 +27,7 @@ class GameInterface(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    async def setup_game(cls, interaction: Interaction, players: set[User | Member]):
+    async def setup_game(cls, interaction: Interaction, players: dict[User | Member]):
         """Sets up game and returns a game object"""
         raise NotImplemented
 
@@ -31,3 +35,14 @@ class GameInterface(abc.ABC):
     async def run(self):
         """Starts the game loop"""
         raise NotImplemented
+
+
+@dataclass(slots=True, frozen=True)
+class Game:
+    url: str
+    max_players: int
+    min_players: int
+    emojis: tuple[str, ...]
+    select_emoji: str
+    logo: Path
+    game_interface: Type[GameInterface]
