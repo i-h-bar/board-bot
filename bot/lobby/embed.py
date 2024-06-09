@@ -10,20 +10,19 @@ from discord import User, Member, Message
 from discord.ui import View
 
 from bot.const.custom_types import Interaction
+from bot.const.games import Game
 from bot.lobby.admin_ctrl import RemovePlayersDropdown, StartGameButton, CancelGameButton
 
 
 class Lobby(discord.Embed):
-    def __init__(self, interaction: Interaction, admin: User | Member, name: str, description: str, game: ModuleType):
+    def __init__(self, interaction: Interaction, admin: User | Member, name: str, description: str, game: Game):
         self.interaction = interaction
         self.game = game
         self.admin = admin
         self.name = name
-        self.emojis: tuple = game.EMOJIS
         self.players = {}
-        self.file_name = f"{Path(self.game.__file__).parts[-2]}_logo.png"
         self.file = discord.File(
-            f"{'/'.join(Path(self.game.__file__).parts[:-1])}/assets/logo.png", filename=self.file_name
+            self.game.logo, filename=self.game.logo.name
         )
 
         self.kicked_players: dict[str, User] = {}
@@ -31,7 +30,7 @@ class Lobby(discord.Embed):
         self.admin_message: Message | None = None
 
         try:
-            url = game.URL
+            url = game.url
         except AttributeError:
             url = None
         else:
@@ -40,7 +39,7 @@ class Lobby(discord.Embed):
         super().__init__(title=name, description=description, url=url)
         self.set_author(name=admin.display_name)
         self.add_to_lobby(self.admin)
-        self.set_image(url=f"attachment://{self.file_name}")
+        self.set_image(url=f"attachment://{self.game.logo.name}")
 
     @property
     def admin_controls(self) -> View:
@@ -54,7 +53,7 @@ class Lobby(discord.Embed):
         return view
 
     def add_to_lobby(self, user: User | Member):
-        self.add_field(name=random.choice(self.game.EMOJIS), value=user.display_name)
+        self.add_field(name=random.choice(self.game.emojis), value=user.display_name)
         self.players[user.display_name] = user
 
     def remove_from_lobby(self, user: str) -> bool:

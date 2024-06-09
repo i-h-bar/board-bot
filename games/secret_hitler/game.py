@@ -1,9 +1,15 @@
+from pathlib import Path
+
 from discord import Interaction, User, Member
 
+from bot.game import Game
 from games.interface.game import GameInterface
+from games.secret_hitler.assets.emoji import EMOJIS, SELECT_EMOJI
 
 
-class Game(GameInterface):
+class SecretHitler(GameInterface):
+    __slots__ = ("_players", "_name", "interaction")
+
     def __init__(self, players: dict[str, User | Member], interaction: Interaction):
         self._players = players
         self._name = "Secret Hitler"
@@ -23,3 +29,14 @@ class Game(GameInterface):
 
     async def run(self):
         pass
+
+
+secret_hitler = Game(
+    url="https://www.secrethitler.com/",
+    max_players=10,
+    min_players=5,
+    game_interface=SecretHitler,
+    emojis=EMOJIS,
+    logo=Path("games/secret_hitler/assets/logo.png"),
+    select_emoji=SELECT_EMOJI,
+)

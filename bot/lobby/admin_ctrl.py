@@ -5,8 +5,7 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-import discord.errors
-import discord.ui
+import discord
 from discord import SelectOption, User
 
 from bot.const.custom_types import Interaction
@@ -46,8 +45,8 @@ class StartGameButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: Interaction):
-        if len(self.lobby.players) >= self.game.MIN_PLAYERS:
-            game: GameInterface = await self.game.Game.setup_game(interaction, self.lobby.players)
+        if len(self.lobby.players) >= self.game.min_players:
+            game: GameInterface = await self.game.game_interface.setup_game(interaction, self.lobby.players)
             name = self.lobby.name
             guild = self.lobby.interaction.guild
             channel = self.lobby.interaction.channel
@@ -70,7 +69,7 @@ class StartGameButton(discord.ui.Button):
         else:
             await interaction.response.send_message(
                 f"Not enough player to start {self.lobby.name}; "
-                f"you need {self.lobby.game.MIN_PLAYERS}-{self.lobby.game.MAX_PLAYERS} to start."
+                f"you need {self.lobby.game.min_players}-{self.lobby.game.max_players} to start."
             )
 
 
@@ -79,7 +78,7 @@ class RemovePlayersDropdown(discord.ui.Select):
         self.lobby = lobby
 
         options = [
-            SelectOption(label=user.display_name, emoji=user.display_icon) for user in self.lobby.players.values()
+            SelectOption(label=user.display_name) for user in self.lobby.players.values()
         ]
 
         if not options:
@@ -120,7 +119,7 @@ class AdmitKickedPlayerButton(discord.ui.Button):
 
     async def callback(self, interaction: Interaction):
         if self.user.display_name not in self.lobby.players:
-            if len(self.lobby.players) >= self.lobby.game.MAX_PLAYERS:
+            if len(self.lobby.players) >= self.lobby.game.max_players:
                 return await interaction.response.send_message(
                     "Sorry, the lobby is at it max players for this game. :(", delete_after=10
                 )

@@ -1,8 +1,7 @@
-from types import ModuleType
+from bot.game import Game
+from games.secret_hitler.game import secret_hitler
 
-from games import secret_hitler
-
-GAMES: dict[str, ModuleType] = {
+GAMES: dict[str, Game] = {
     "Secret Hitler": secret_hitler
 }
 

@@ -13,7 +13,7 @@ from bot.lobby.buttons import JoinLobbyButton, LeaveLobbyButton
 class GameSelect(discord.ui.Select):
     def __init__(self):
         options = [
-            SelectOption(label=game, emoji=module.SELECT_EMOJI) for game, module in GAMES.items()
+            SelectOption(label=name, emoji=game.select_emoji) for name, game in GAMES.items()
         ]
         super().__init__(placeholder="Select a game...", max_values=1, min_values=1, options=options)
 
@@ -25,7 +25,7 @@ class GameSelect(discord.ui.Select):
                 "I didn't successfully get the option", ephemeral=True, delete_after=600.0
             )
 
-        game: ModuleType = GAMES.get(choice)
+        game = GAMES.get(choice)
         if not game:
             return await interaction.response.send_message(
                 f"I couldn't find the game called: {choice}", ephemeral=True, delete_after=600.0

@@ -11,7 +11,7 @@ class JoinLobbyButton(discord.ui.Button):
     def __init__(self, lobby: Lobby):
         self.lobby = lobby
         try:
-            self.button_emoji = self.lobby.emojis[0]
+            self.button_emoji = self.lobby.game.emojis[0]
         except IndexError:
             self.button_emoji = DEFAULT_EMOJI
 
@@ -39,7 +39,7 @@ class JoinLobbyButton(discord.ui.Button):
             )
 
         elif not_in_lobby:
-            if len(self.lobby.players) >= self.lobby.game.MAX_PLAYERS:
+            if len(self.lobby.players) >= self.lobby.game.max_players:
                 return await interaction.response.send_message(
                     "Sorry, the lobby is at it max players for this game. :(", ephemeral=True, delete_after=600
                 )
