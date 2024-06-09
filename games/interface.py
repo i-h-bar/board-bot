@@ -18,12 +18,6 @@ class GameInterface(abc.ABC):
         """Get the players of the game"""
         raise NotImplemented
 
-    @property
-    @abc.abstractmethod
-    def name(self) -> str:
-        """Get the name of the game"""
-        raise NotImplemented
-
     @classmethod
     @abc.abstractmethod
     async def setup_game(cls, interaction: Interaction, players: dict[User | Member]):
@@ -39,6 +33,7 @@ class GameInterface(abc.ABC):
 @dataclass(slots=True, frozen=True)
 class Game:
     url: str
+    name: str
     max_players: int
     min_players: int
     emojis: tuple[str, ...]

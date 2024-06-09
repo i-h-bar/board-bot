@@ -11,16 +11,11 @@ class SecretHitler(GameInterface):
 
     def __init__(self, players: dict[str, User | Member], interaction: Interaction):
         self._players = players
-        self._name = "Secret Hitler"
         self.interaction = interaction
 
     @property
     def players(self) -> dict[str, User | Member]:
         return self._players
-
-    @property
-    def name(self) -> str:
-        return self._name
 
     @classmethod
     async def setup_game(cls, interaction: Interaction, players: dict[str, User | Member]):
@@ -32,6 +27,7 @@ class SecretHitler(GameInterface):
 
 secret_hitler = Game(
     url="https://www.secrethitler.com/",
+    name="Secret Hitler",
     max_players=10,
     min_players=5,
     game_interface=SecretHitler,
