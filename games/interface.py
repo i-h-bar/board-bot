@@ -1,7 +1,6 @@
 import abc
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Type
 
 from discord import Interaction, User, Member
 
@@ -45,4 +44,4 @@ class Game:
     emojis: tuple[str, ...]
     select_emoji: str
     logo: Path
-    game_interface: Type[GameInterface]
+    game_interface: type[GameInterface]
