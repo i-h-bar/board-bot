@@ -46,7 +46,7 @@ class StartGameButton(discord.ui.Button):
 
     async def callback(self, interaction: Interaction):
         if len(self.lobby.players) >= self.game.min_players:
-            game: GameInterface = await self.game.game_interface.setup_game(interaction, self.lobby.players)
+            game_interface = await self.game.game_interface.setup_game(interaction, self.lobby.players)
             name = self.lobby.name
             guild = self.lobby.interaction.guild
             channel = self.lobby.interaction.channel
@@ -63,8 +63,10 @@ class StartGameButton(discord.ui.Button):
                 channel
             )
 
-            await asyncio.gather(*(player.send(f"Have fun in your game of {game.name}!") for player in game.players.values()))
-            await game.run()
+            await asyncio.gather(
+                *(player.send(f"Have fun in your game of {self.game.name}!") for player in game_interface.players.values())
+            )
+            await game_interface.run()
 
         else:
             await interaction.response.send_message(

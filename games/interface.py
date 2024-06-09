@@ -6,23 +6,22 @@ from discord import Interaction, User, Member
 
 
 class GameInterface(abc.ABC):
-    @abc.abstractmethod
-    def __init__(self, players: dict[str, User | Member], interaction: Interaction, *args, **kwargs):
+    __slots__ = ("_players", "interaction")
+
+    def __init__(self, players: dict[str, User | Member], interaction: Interaction):
         """Initialise the game interface"""
         self._players: dict[str, User | Member] = players
         self.interaction = interaction
 
     @property
-    @abc.abstractmethod
     def players(self) -> dict[str, User | Member]:
         """Get the players of the game"""
-        raise NotImplemented
+        return self._players
 
     @classmethod
-    @abc.abstractmethod
-    async def setup_game(cls, interaction: Interaction, players: dict[User | Member]):
+    async def setup_game(cls, interaction: Interaction, players: dict[str, User | Member]):
         """Sets up game and returns a game object"""
-        raise NotImplemented
+        return cls(players, interaction)
 
     @abc.abstractmethod
     async def run(self):

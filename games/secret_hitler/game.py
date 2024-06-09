@@ -7,20 +7,6 @@ from games.secret_hitler.assets.emoji import EMOJIS, SELECT_EMOJI
 
 
 class SecretHitler(GameInterface):
-    __slots__ = ("_players", "_name", "interaction")
-
-    def __init__(self, players: dict[str, User | Member], interaction: Interaction):
-        self._players = players
-        self.interaction = interaction
-
-    @property
-    def players(self) -> dict[str, User | Member]:
-        return self._players
-
-    @classmethod
-    async def setup_game(cls, interaction: Interaction, players: dict[str, User | Member]):
-        return cls(players, interaction)
-
     async def run(self):
         pass
 
