@@ -11,10 +11,12 @@ from discord import SelectOption, User
 from bot.const.custom_types import Interaction
 from bot.const.emoji import DEFAULT_EMOJI
 from bot.const.games import current_games
-from games.interface import GameInterface
 
 if TYPE_CHECKING:
     from bot.lobby import Lobby
+
+
+EMPTY_LOBBY_TEXT = "Empty Lobby :("
 
 
 class CancelGameButton(discord.ui.Button):
@@ -64,7 +66,8 @@ class StartGameButton(discord.ui.Button):
             )
 
             await asyncio.gather(
-                *(player.send(f"Have fun in your game of {self.game.name}!") for player in game_interface.players.values())
+                *(player.send(f"Have fun in your game of {self.game.name}!") for player in
+                  game_interface.players.values())
             )
             await game_interface.run()
 
@@ -80,12 +83,12 @@ class RemovePlayersDropdown(discord.ui.Select):
         self.lobby = lobby
 
         options = [
-            SelectOption(label=user.display_name) for user in self.lobby.players.values()
+            SelectOption(label=user.display_name) for user in self.lobby.players.values() if user != self.lobby.admin
         ]
 
         if not options:
             options = [
-                SelectOption(label="Empty Lobby :(", emoji=DEFAULT_EMOJI)
+                SelectOption(label=EMPTY_LOBBY_TEXT, emoji=DEFAULT_EMOJI)
             ]
 
         super().__init__(placeholder="Kick a player from lobby...", max_values=1, min_values=1, options=options)
@@ -100,15 +103,21 @@ class RemovePlayersDropdown(discord.ui.Select):
             choice = self.values[0]
         except IndexError:
             return await interaction.response.send_message(
-                "I didn't successfully get the option", ephemeral=True, delete_after=600
+                "I didn't successfully get the option", delete_after=10
             )
 
-        self.lobby.kicked_players[choice] = self.lobby.players[choice]
-        self.lobby.remove_from_lobby(choice)
-        await self.lobby.update()
+        if choice == EMPTY_LOBBY_TEXT:
+            await interaction.response.send_message(
+                f"The empty lobby choice is not meant to be clicked you silly goose!", delete_after=10
+            )
+            await self.lobby.update()
+        else:
+            self.lobby.kicked_players[choice] = self.lobby.players[choice]
+            self.lobby.remove_from_lobby(choice)
+            await self.lobby.update()
 
-        await self.lobby.kicked_players[choice].send("You have been kicked from the lobby!")
-        await interaction.response.send_message(f"Removed {choice} from lobby.", delete_after=10)
+            await self.lobby.kicked_players[choice].send("You have been kicked from the lobby!")
+            await interaction.response.send_message(f"Removed {choice} from lobby.", delete_after=10)
 
 
 class AdmitKickedPlayerButton(discord.ui.Button):
