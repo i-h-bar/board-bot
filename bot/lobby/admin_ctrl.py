@@ -88,7 +88,7 @@ class RemovePlayersDropdown(discord.ui.Select):
 
         if not options:
             options = [
-                SelectOption(label=EMPTY_LOBBY_TEXT, emoji=DEFAULT_EMOJI)
+                SelectOption(label=EMPTY_LOBBY_TEXT, emoji="😭")
             ]
 
         super().__init__(placeholder="Kick a player from lobby...", max_values=1, min_values=1, options=options)
