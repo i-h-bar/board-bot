@@ -3,9 +3,9 @@ import os
 
 import discord
 from discord.ext.commands import Bot
-from bot.const.custom_types import Interaction
 from discord.ui import View
 
+from bot.const.custom_types import Interaction
 from bot.const.games import current_games
 from bot.lobby.select import GameSelect
 
