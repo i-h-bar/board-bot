@@ -3,7 +3,7 @@ import os
 
 import discord
 from discord.ext.commands import Bot
-from discord.interactions import Interaction
+from bot.const.custom_types import Interaction
 from discord.ui import View
 
 from bot.const.games import current_games
