@@ -1,5 +1,3 @@
-from types import ModuleType
-
 import discord
 from discord import SelectOption
 from discord.ui import View

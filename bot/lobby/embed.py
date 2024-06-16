@@ -2,8 +2,6 @@ import asyncio
 import logging
 import random
 from datetime import datetime
-from pathlib import Path
-from types import ModuleType
 
 import discord
 from discord import User, Member, Message
