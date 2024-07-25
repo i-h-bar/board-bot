@@ -21,7 +21,7 @@ class GameInterface(abc.ABC):
     @classmethod
     async def setup_game(cls, interaction: Interaction, players: dict[str, User | Member]):
         """Sets up game and returns a game object"""
-        return cls(players, interaction)
+        raise NotImplemented
 
     @abc.abstractmethod
     async def run(self):
