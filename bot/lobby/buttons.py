@@ -20,7 +20,7 @@ class JoinLobbyButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: Interaction):
-        not_in_lobby = interaction.user not in self.lobby.players.values()
+        not_in_lobby = interaction.user.display_name not in self.lobby.players.keys()
 
         if not_in_lobby and interaction.user.display_name in self.lobby.banned_players:
             return await interaction.response.send_message(
@@ -44,12 +44,14 @@ class JoinLobbyButton(discord.ui.Button):
                     "Sorry, the lobby is at it max players for this game. :(", ephemeral=True, delete_after=600
                 )
             else:
-                self.lobby.add_to_lobby(interaction.user)
+                self.lobby.add_to_lobby(interaction)
                 await self.lobby.update()
                 await interaction.response.send_message("Welcome to the game!", ephemeral=True, delete_after=600)
 
         else:
-            await interaction.response.send_message("You are in the lobby silly! 😝", ephemeral=True, delete_after=60)
+            await interaction.response.send_message(
+                "You are already in the lobby silly! 😝", ephemeral=True, delete_after=60
+            )
 
 
 class LeaveLobbyButton(discord.ui.Button):

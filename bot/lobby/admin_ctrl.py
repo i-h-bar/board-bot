@@ -64,7 +64,7 @@ class StartGameButton(discord.ui.Button):
             )
 
             await asyncio.gather(
-                *(player.send(f"Have fun in your game of {self.game.name}!") for player in
+                *(interaction.user.send(f"Have fun in your game of {self.game.name}!") for interaction in
                   game_interface.players.values())
             )
             await game_interface.run()
@@ -81,7 +81,7 @@ class RemovePlayersDropdown(discord.ui.Select):
         self.lobby = lobby
 
         options = [
-            SelectOption(label=user.display_name) for user in self.lobby.players.values() if user != self.lobby.admin
+            SelectOption(label=interaction.user.display_name) for interaction in self.lobby.players.values() if interaction.user != self.lobby.admin
         ]
 
         if not options:

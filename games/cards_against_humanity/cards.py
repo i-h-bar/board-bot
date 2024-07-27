@@ -19,16 +19,16 @@ class BlackCard:
 
 
 class Deck[T]:
-    __slots__ = ("cards", "discard", "card_type")
+    __slots__ = ("cards", "discard_pile", "card_type")
 
     def __init__(self, cards: list[T]):
         self.cards = cards
-        self.discard: list[T] = []
+        self.discard_pile: list[T] = []
         self.card_type = type(self.cards[0])
         random.shuffle(self.cards)
 
     def __repr__(self: Self) -> str:
-        return f"{self.__class__.__name__}({self.card_type.__name__}, len={len(self.cards) + len(self.discard)})"
+        return f"{self.__class__.__name__}({self.card_type.__name__}, len={len(self.cards) + len(self.discard_pile)})"
 
     @classmethod
     def white(cls: type[Self]) -> Self:
@@ -36,7 +36,7 @@ class Deck[T]:
 
     @classmethod
     def black(cls: type[Self]) -> Self:
-        return cls([BlackCard(text=text, slots=text.count("____")) for text in _BLACK_CARDS.read_text().splitlines()])
+        return cls([BlackCard(text=text, slots=text.count("____") or 1) for text in _BLACK_CARDS.read_text().splitlines()])
 
     def draw(self: Self) -> T:
         if not self.cards:
@@ -46,9 +46,9 @@ class Deck[T]:
         return card
 
     def reset(self: Self) -> None:
-        self.cards = self.discard
+        self.cards = self.discard_pile
+        self.discard_pile = []
         random.shuffle(self.cards)
-        self.discard = []
 
     def discard(self: Self, card: T) -> None:
-        self.discard.append(card)
+        self.discard_pile.append(card)

@@ -8,18 +8,18 @@ from discord import Interaction, User, Member
 class GameInterface(abc.ABC):
     __slots__ = ("_players", "interaction")
 
-    def __init__(self, players: dict[str, User | Member], interaction: Interaction):
+    def __init__(self, players: dict[str, Interaction], interaction: Interaction):
         """Initialise the game interface"""
-        self._players: dict[str, User | Member] = players
+        self._players: dict[str, Interaction] = players
         self.interaction = interaction
 
     @property
-    def players(self) -> dict[str, User | Member]:
+    def players(self) -> dict[str, Interaction]:
         """Get the players of the game"""
         return self._players
 
     @classmethod
-    async def setup_game(cls, interaction: Interaction, players: dict[str, User | Member]):
+    async def setup_game(cls, interaction: Interaction, players: dict[str, Interaction]):
         """Sets up game and returns a game object"""
         raise NotImplemented
 
