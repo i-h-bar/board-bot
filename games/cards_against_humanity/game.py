@@ -14,7 +14,7 @@ from games.interface import Game, GameInterface
 
 
 class CAH(GameInterface):
-    __slots__ = ("white", "black", "hands", "points", "round", "player_list")
+    __slots__ = ("white", "black", "hands", "points", "round", "player_list", "picks", "current_black_card")
 
     def __init__(self: Self, players: dict[str, Interaction], interaction: Interaction):
         super().__init__(players, interaction)
@@ -26,6 +26,8 @@ class CAH(GameInterface):
 
         self.hands = {player: [self.white.draw() for _ in range(10)] for player in self.players.keys()}
         self.points = {player: 0 for player in self.players.keys()}
+        self.picks = {}
+        self.current_black_card: BlackCard = None
 
     @classmethod
     async def setup_game(cls: type[Self], interaction: Interaction, players: dict[str, User | Member]) -> Self:
@@ -39,15 +41,16 @@ class CAH(GameInterface):
         self.round += 1
 
         while any(point < 10 for point in self.points.values()):
-            black_card = self.black.draw()
+            self.current_black_card = self.black.draw()
             round_message = await self.card_czar.followup.send(f"Round {self.round} - Card Czar is {self.card_czar.user.display_name}")
-            black_card_message = await self.card_czar.followup.send(f"```Black Card:\n\n{black_card.text}```")
-            await self.white_card_phase(black_card)
+            black_card_message = await self.card_czar.followup.send(f"```Black Card:\n\n{self.current_black_card.text}```")
+            await self.white_card_phase()
+            await self.card_czar_pick()
 
             self.refresh_hands()
             await round_message.delete()
             await black_card_message.delete()
-            self.black.discard(black_card)
+            self.black.discard(self.current_black_card)
             self.round += 1
 
     def refresh_hands(self):
@@ -55,14 +58,18 @@ class CAH(GameInterface):
             for _ in range(10 - len(hand)):
                 hand.append(self.white.draw())
 
-    async def white_card_phase(self, black_card: BlackCard):
-        picks = {interaction.user.display_name: [] for interaction in self.players.values()}
+    async def card_czar_pick(self):
+        for answer in self.picks.values():
+            await self.card_czar.followup.send(answer)
+
+    async def white_card_phase(self):
+        self.picks = {interaction.user.display_name: [] for interaction in self.players.values()}
         for player, interaction in self.players.items():
-            pick = Pick(black_card.slots, self.hands[player], picks[player])
+            pick = Pick(self.current_black_card.slots, self.hands[player], self.picks[player])
             view = View()
             view.add_item(pick)
             try:
-                await interaction.followup.send(f"Pick {black_card.slots} cards...", view=view, ephemeral=True)
+                await interaction.followup.send(f"Pick {self.current_black_card.slots} cards...", view=view, ephemeral=True)
             except HTTPException:
                 for choice in pick.options:
                     print("Potential Invalid Emoji: ")
@@ -71,7 +78,7 @@ class CAH(GameInterface):
                 raise
 
         picking_message = await self.card_czar.followup.send("Calculating who is still picking...")
-        while still_picking := [player for player, pick in picks.items() if len(pick) != black_card.slots]:
+        while still_picking := [player for player, pick in self.picks.items() if len(pick) != self.current_black_card.slots]:
             await picking_message.edit(content=f"Still picking...\n{"\n".join(still_picking)}")
             await asyncio.sleep(1)
 
