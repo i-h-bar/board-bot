@@ -67,8 +67,14 @@ class CAH(GameInterface):
                 hand.append(self.white.draw())
 
     async def card_czar_pick(self):
-        for answer in self.picks.values():
-            await self.card_czar.followup.send(answer)
+        message = f"```ansi\n{"\n\n".join(self.format_picks())}```"
+        await self.card_czar.followup.send(message)
+
+    def format_picks(self):
+        start_colour = 33
+        for i, answer in enumerate(self.picks.values()):
+            formatted_answers = (f"\u001b[1;31m{x}\u001b[1;{start_colour + 1}m" for x in answer)
+            yield f"\u001b[1;{start_colour + 1}m{self.current_black_card.text.format(*formatted_answers)}\u001b[0m"
 
     async def white_card_phase(self):
         self.picks = {interaction.user.display_name: [] for interaction in self.players.values()}
