@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Self
 
-_WHITE_CARDS = Path("games/cards_against_humanity/assets/white.txt")
-_BLACK_CARDS = Path("games/cards_against_humanity/assets/black.txt")
+WHITE_CARDS = Path("games/cards_against_humanity/assets/white.txt")
+BLACK_CARDS = Path("games/cards_against_humanity/assets/black.txt")
 
 
 @dataclass(slots=True, frozen=True, repr=True)
@@ -32,11 +32,11 @@ class Deck[T]:
 
     @classmethod
     def white(cls: type[Self]) -> Self:
-        return cls([WhiteCard(text) for text in _WHITE_CARDS.read_text().splitlines()])
+        return cls([WhiteCard(text) for text in WHITE_CARDS.read_text().splitlines()])
 
     @classmethod
     def black(cls: type[Self]) -> Self:
-        return cls([BlackCard(text=text, slots=text.count("____") or 1) for text in _BLACK_CARDS.read_text().splitlines()])
+        return cls([BlackCard(text=text, slots=text.count("{}") or 1) for text in BLACK_CARDS.read_text().splitlines()])
 
     def draw(self: Self) -> T:
         if not self.cards:
