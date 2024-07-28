@@ -7,7 +7,7 @@ from discord import User, Member, HTTPException
 from discord.ui import View
 
 from bot.const.custom_types import Interaction
-from games.cards_against_humanity.cards import Deck, WhiteCard
+from games.cards_against_humanity.cards import Deck, WhiteCard, BlackCard
 from games.cards_against_humanity.pick import Pick
 from games.default_assets.emojis import DEFAULT_EMOJIS
 from games.interface import Game, GameInterface
@@ -42,35 +42,40 @@ class CAH(GameInterface):
             black_card = self.black.draw()
             round_message = await self.card_czar.followup.send(f"Round {self.round} - Card Czar is {self.card_czar.user.display_name}")
             black_card_message = await self.card_czar.followup.send(f"```Black Card:\n\n{black_card.text}```")
-            picks = {interaction.user.display_name: [] for interaction in self.players.values()}
-            for player, interaction in self.players.items():
-                pick = Pick(black_card.slots, self.hands[player], picks[player])
-                view = View()
-                view.add_item(pick)
-                try:
-                    await interaction.followup.send(f"Pick {black_card.slots} cards...", view=view, ephemeral=True)
-                except HTTPException:
-                    for choice in pick.options:
-                        print("Potential Invalid Emoji: ")
-                        print(choice.emoji)
+            await self.white_card_phase(black_card)
 
-                    raise
-
-            picking_message = await self.card_czar.followup.send("Calculating who is still picking...")
-            while still_picking := [player for player, pick in picks.items() if len(pick) != black_card.slots]:
-                await picking_message.edit(content=f"Still picking...\n{"\n".join(still_picking)}")
-                await asyncio.sleep(1)
-
-            await picking_message.delete()
-
-            for hand in self.hands.values():
-                for _ in range(10 - len(hand)):
-                    hand.append(self.white.draw())
-
+            self.refresh_hands()
             await round_message.delete()
             await black_card_message.delete()
             self.black.discard(black_card)
             self.round += 1
+
+    def refresh_hands(self):
+        for hand in self.hands.values():
+            for _ in range(10 - len(hand)):
+                hand.append(self.white.draw())
+
+    async def white_card_phase(self, black_card: BlackCard):
+        picks = {interaction.user.display_name: [] for interaction in self.players.values()}
+        for player, interaction in self.players.items():
+            pick = Pick(black_card.slots, self.hands[player], picks[player])
+            view = View()
+            view.add_item(pick)
+            try:
+                await interaction.followup.send(f"Pick {black_card.slots} cards...", view=view, ephemeral=True)
+            except HTTPException:
+                for choice in pick.options:
+                    print("Potential Invalid Emoji: ")
+                    print(choice.emoji)
+
+                raise
+
+        picking_message = await self.card_czar.followup.send("Calculating who is still picking...")
+        while still_picking := [player for player, pick in picks.items() if len(pick) != black_card.slots]:
+            await picking_message.edit(content=f"Still picking...\n{"\n".join(still_picking)}")
+            await asyncio.sleep(1)
+
+        await picking_message.delete()
 
 
 cah = Game(
