@@ -2,7 +2,7 @@ import abc
 from dataclasses import dataclass
 from pathlib import Path
 
-from discord import Interaction, User, Member
+from discord import Interaction
 
 
 class GameInterface(abc.ABC):
@@ -21,12 +21,12 @@ class GameInterface(abc.ABC):
     @classmethod
     async def setup_game(cls, interaction: Interaction, players: dict[str, Interaction]):
         """Sets up game and returns a game object"""
-        raise NotImplemented
+        raise NotImplementedError
 
     @abc.abstractmethod
     async def run(self):
         """Starts the game loop"""
-        raise NotImplemented
+        raise NotImplementedError
 
 
 @dataclass(slots=True, frozen=True)

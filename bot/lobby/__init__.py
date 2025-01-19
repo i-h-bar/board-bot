@@ -1,1 +1,1 @@
-from bot.lobby.embed import Lobby
+from bot.lobby.embed import Lobby as Lobby

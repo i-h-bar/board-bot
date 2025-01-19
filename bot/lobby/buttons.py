@@ -57,7 +57,7 @@ class JoinLobbyButton(discord.ui.Button):
 class LeaveLobbyButton(discord.ui.Button):
     def __init__(self, lobby: Lobby):
         self.lobby = lobby
-        super().__init__(label=f"Leave Lobby", emoji="💩")
+        super().__init__(label="Leave Lobby", emoji="💩")
 
     async def callback(self, interaction: Interaction):
         if interaction.user.display_name in self.lobby.players:

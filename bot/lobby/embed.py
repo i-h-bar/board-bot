@@ -73,7 +73,7 @@ class Lobby(discord.Embed):
             await og_msg.delete()
         except (discord.errors.NotFound, discord.errors.Forbidden, discord.errors.HTTPException) as error:
             logging.warning(
-                f"[%s] - Could not delete lobby due to - %s",
+                "[%s] - Could not delete lobby due to - %s",
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 str(error)
             )
