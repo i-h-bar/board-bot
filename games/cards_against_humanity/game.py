@@ -42,7 +42,7 @@ class CAH(GameInterface):
         self.round += 1
 
         while any(point < 10 for point in self.points.values()):
-            black_card_message = self.round_setup()
+            black_card_message = await self.round_setup()
 
             result = await self.white_card_phase()
             if not result:
@@ -62,7 +62,7 @@ class CAH(GameInterface):
 
     async def determine_winner(self):#
         try:
-            winner = [name for name, points in self.points.values() if points >= 10][0]
+            winner = [name for name, points in self.points.items() if points >= 10][0]
         except IndexError:
             await self.card_czar.followup.send("Failed to determine a winner :(")
         else:
@@ -103,7 +103,7 @@ class CAH(GameInterface):
             raise
 
         while czar_pick.is_picking:
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
 
         self.points[czar_pick.winner] += 1
         await picks_message.delete()

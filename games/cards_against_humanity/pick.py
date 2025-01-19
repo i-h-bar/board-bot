@@ -46,6 +46,5 @@ class CzarPick(discord.ui.Select):
 
     async def callback(self, interaction: Interaction):
         self.winner = self.picks[" & ".join(self.values)]
-        await interaction.response.send_message(f"{self.winner} has won this round!")
+        await interaction.response.send_message(f"{self.winner} has won this round!", delete_after=60)
         self.is_picking = False
-

@@ -69,7 +69,8 @@ class StartGameButton(discord.ui.Button):
                 *(interaction.user.send(f"Have fun in your game of {self.game.name}!") for interaction in
                   game_interface.players.values())
             )
-            result = await RunWithTO(timeout_s=21600)(game_interface.run)
+            game = RunWithTO(timeout_s=21600)(game_interface.run)
+            result = await game()
             if not result:
                 await interaction.response.send_message(
                     "You have spent longer than 6 hours in this game. It has now been ended."
