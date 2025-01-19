@@ -46,10 +46,12 @@ class CAH(GameInterface):
 
             result = await self.white_card_phase()
             if not result:
+                await self.card_czar.followup.send("The players took too long to response. The game has now ended.")
                 break
 
             result = await self.card_czar_pick()
             if not result:
+                await self.card_czar.followup.send("Card Tzar took too long to response. The game has now ended.")
                 break
 
             self.refresh_hands()
@@ -60,9 +62,9 @@ class CAH(GameInterface):
         await self.determine_winner()
 
 
-    async def determine_winner(self):#
+    async def determine_winner(self):
         try:
-            winner = [name for name, points in self.points.items() if points >= 10][0]
+            winner = [name for name, points in sorted(self.points.items(), key=lambda v: v[1])][0]
         except IndexError:
             await self.card_czar.followup.send("Failed to determine a winner :(")
         else:
