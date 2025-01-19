@@ -71,7 +71,7 @@ async def test_not_timeout_kwargs_default():
 
 
 @pytest.mark.asyncio
-async def test_not_timeout_kwargs_default():
+async def test_not_timeout_args_kwargs_default():
     @RunWithTO(timeout_s=0.1)
     async def test(arg, kwarg = 6):
         await asyncio.sleep(0.01)
@@ -85,7 +85,7 @@ async def test_not_timeout_kwargs_default():
 
 
 @pytest.mark.asyncio
-async def test_not_timeout_kwargs():
+async def test_not_timeout_args_kwargs():
     @RunWithTO(timeout_s=0.1)
     async def test(arg, kwarg = 6):
         await asyncio.sleep(0.01)
@@ -100,7 +100,7 @@ async def test_not_timeout_kwargs():
 
 
 @pytest.mark.asyncio
-async def test_not_timeout_kwargs_pos():
+async def test_not_timeout_args_kwargs_pos():
     @RunWithTO(timeout_s=0.1)
     async def test(arg, kwarg = 6):
         await asyncio.sleep(0.01)
