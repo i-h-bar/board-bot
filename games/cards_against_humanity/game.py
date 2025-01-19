@@ -8,7 +8,7 @@ from discord.ui import View
 
 from bot.const.custom_types import Interaction
 from games.cards_against_humanity.cards import Deck, BlackCard
-from games.cards_against_humanity.pick import Pick
+from games.cards_against_humanity.pick import PlayerPick, CzarPick
 from games.default_assets.emojis import DEFAULT_EMOJIS
 from games.interface import Game, GameInterface
 
@@ -47,7 +47,8 @@ class CAH(GameInterface):
                 *("\u001b[4;32m     \u001b[0m\u001b[1;32m" for _ in range(self.current_black_card.slots))
             )
             black_card_message = await self.card_czar.followup.send(
-                f"Round {self.round} - Card Czar is **__{self.card_czar.user.display_name}__**\n"
+                f"Round {self.round} - Card Czar is **__{self.card_czar.user.display_name}__**\n\n"
+                f"__Score Board__\n{"\n".join(f"{player} - {points}" for player, points in self.points.items())}\n\n"
                 f"```ansi\n"
                 f"\u001b[1;32m"
                 f"{black_card_text}"
@@ -67,19 +68,36 @@ class CAH(GameInterface):
                 hand.append(self.white.draw())
 
     async def card_czar_pick(self):
-        message = f"```ansi\n{"\n\n".join(self.format_picks())}```"
-        await self.card_czar.followup.send(message)
+        picks_message = await self.card_czar.followup.send(f"```ansi\n{"\n\n".join(self.format_picks())}```")
+        czar_pick = CzarPick(self.picks)
+        view = View()
+        view.add_item(czar_pick)
+        try:
+            await self.card_czar.followup.send(f"The best answer...", view=view, ephemeral=True)
+        except HTTPException:
+            for choice in czar_pick.options:
+                print("Potential Invalid Emoji: ")
+                print(choice.emoji)
+
+            raise
+
+        while czar_pick.is_picking:
+            await asyncio.sleep(1)
+
+        self.points[czar_pick.winner] += 1
+        await picks_message.delete()
 
     def format_picks(self):
         start_colour = 33
-        for i, answer in enumerate(self.picks.values()):
+        rng = random.Random(self.card_czar.user.display_name)
+        for i, answer in enumerate(rng.sample(list(self.picks.values()), k=len(self.picks))):
             formatted_answers = (f"\u001b[1;31m{x}\u001b[1;{start_colour + 1}m" for x in answer)
             yield f"\u001b[1;{start_colour + 1}m{self.current_black_card.text.format(*formatted_answers)}\u001b[0m"
 
     async def white_card_phase(self):
         self.picks = {interaction.user.display_name: [] for interaction in self.players.values()}
         for player, interaction in self.players.items():
-            pick = Pick(self.current_black_card.slots, self.hands[player], self.picks[player])
+            pick = PlayerPick(self.current_black_card.slots, self.hands[player], self.picks[player])
             view = View()
             view.add_item(pick)
             try:
