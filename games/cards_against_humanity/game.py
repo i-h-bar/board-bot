@@ -64,7 +64,7 @@ class CAH(GameInterface):
 
     async def determine_winner(self):
         try:
-            winner = [name for name, points in sorted(self.points.items(), key=lambda v: v[1])][0]
+            winner = [name for name, points in sorted(self.points.items(), key=lambda v: v[1], reverse=True)][0]
         except IndexError:
             await self.card_czar.followup.send("Failed to determine a winner :(")
         else:
