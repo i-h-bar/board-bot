@@ -10,6 +10,7 @@ from discord import SelectOption, User
 
 from bot.const.custom_types import Interaction
 from bot.const.games import current_games
+from utils.coro_timeout import RunWithTO
 
 if TYPE_CHECKING:
     from bot.lobby import Lobby
@@ -46,6 +47,7 @@ class StartGameButton(discord.ui.Button):
 
     async def callback(self, interaction: Interaction):
         if len(self.lobby.players) >= self.game.min_players:
+            current_games.add(self.lobby.interaction.channel)
             game_interface = await self.game.game_interface.setup_game(interaction, self.lobby.players)
             name = self.lobby.name
             guild = self.lobby.interaction.guild
@@ -67,13 +69,22 @@ class StartGameButton(discord.ui.Button):
                 *(interaction.user.send(f"Have fun in your game of {self.game.name}!") for interaction in
                   game_interface.players.values())
             )
-            await game_interface.run()
+            result = await RunWithTO(timeout_s=21600)(game_interface.run)
+            if not result:
+                await interaction.response.send_message(
+                    "You have spent longer than 6 hours in this game. It has now been ended."
+                )
 
         else:
             await interaction.response.send_message(
                 f"Not enough player to start {self.lobby.name}; "
                 f"you need {self.lobby.game.min_players}-{self.lobby.game.max_players} to start."
             )
+
+        try:
+            current_games.remove(self.lobby.interaction.channel)
+        except KeyError:
+            pass
 
 
 class RemovePlayersDropdown(discord.ui.Select):

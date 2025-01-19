@@ -11,6 +11,7 @@ from games.cards_against_humanity.cards import Deck, BlackCard
 from games.cards_against_humanity.pick import PlayerPick, CzarPick
 from games.default_assets.emojis import DEFAULT_EMOJIS
 from games.interface import Game, GameInterface
+from utils.coro_timeout import RunWithTO
 
 
 class CAH(GameInterface):
@@ -42,8 +43,14 @@ class CAH(GameInterface):
 
         while any(point < 10 for point in self.points.values()):
             black_card_message = self.round_setup()
-            await self.white_card_phase()
-            await self.card_czar_pick()
+
+            result = await self.white_card_phase()
+            if not result:
+                break
+
+            result = await self.card_czar_pick()
+            if not result:
+                break
 
             self.refresh_hands()
             await black_card_message.delete()
@@ -80,6 +87,7 @@ class CAH(GameInterface):
             for _ in range(10 - len(hand)):
                 hand.append(self.white.draw())
 
+    @RunWithTO(timeout_s=1800)
     async def card_czar_pick(self):
         picks_message = await self.card_czar.followup.send(f"```ansi\n{"\n\n".join(self.format_picks())}```")
         czar_pick = CzarPick(self.picks)
@@ -107,6 +115,7 @@ class CAH(GameInterface):
             formatted_answers = (f"\u001b[1;31m{x}\u001b[1;{start_colour + 1}m" for x in answer)
             yield f"\u001b[1;{start_colour + 1}m{self.current_black_card.text.format(*formatted_answers)}\u001b[0m"
 
+    @RunWithTO(timeout_s=1800)
     async def white_card_phase(self):
         self.picks = {interaction.user.display_name: [] for interaction in self.players.values()}
         for player, interaction in self.players.items():

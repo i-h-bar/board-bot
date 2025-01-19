@@ -30,6 +30,7 @@ async def play(interaction: Interaction):
         view = View()
         view.add_item(dropdown)
         await interaction.response.send_message("Pick a game to play...", view=view, ephemeral=True, delete_after=600.0)
+
     else:
         await interaction.response.send_message(
             "There is already a game being played or organised in this channel!", ephemeral=True, delete_after=60.0
