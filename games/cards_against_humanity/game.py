@@ -41,19 +41,7 @@ class CAH(GameInterface):
         self.round += 1
 
         while any(point < 10 for point in self.points.values()):
-            self.current_black_card = self.black.draw()
-
-            black_card_text = self.current_black_card.text.format(
-                *("\u001b[4;32m     \u001b[0m\u001b[1;32m" for _ in range(self.current_black_card.slots))
-            )
-            black_card_message = await self.card_czar.followup.send(
-                f"Round {self.round} - Card Czar is **__{self.card_czar.user.display_name}__**\n\n"
-                f"__Score Board__\n{"\n".join(f"{player} - {points}" for player, points in self.points.items())}\n\n"
-                f"```ansi\n"
-                f"\u001b[1;32m"
-                f"{black_card_text}"
-                f"\u001b[0m```"
-            )
+            black_card_message = self.round_setup()
             await self.white_card_phase()
             await self.card_czar_pick()
 
@@ -61,6 +49,31 @@ class CAH(GameInterface):
             await black_card_message.delete()
             self.black.discard(self.current_black_card)
             self.round += 1
+
+        await self.determine_winner()
+
+
+    async def determine_winner(self):#
+        try:
+            winner = [name for name, points in self.points.values() if points >= 10][0]
+        except IndexError:
+            await self.card_czar.followup.send("Failed to determine a winner :(")
+        else:
+            await self.card_czar.followup.send(f"{winner} has won the game!")
+
+    async def round_setup(self):
+        self.current_black_card = self.black.draw()
+        black_card_text = self.current_black_card.text.format(
+            *("\u001b[4;32m     \u001b[0m\u001b[1;32m" for _ in range(self.current_black_card.slots))
+        )
+        return await self.card_czar.followup.send(
+            f"Round {self.round} - Card Czar is **__{self.card_czar.user.display_name}__**\n\n"
+            f"__Score Board__\n{"\n".join(f"{player} - {points}" for player, points in self.points.items())}\n\n"
+            f"```ansi\n"
+            f"\u001b[1;32m"
+            f"{black_card_text}"
+            f"\u001b[0m```"
+        )
 
     def refresh_hands(self):
         for hand in self.hands.values():
