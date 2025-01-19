@@ -4,11 +4,13 @@ import os
 import discord
 from discord.ext.commands import Bot
 from discord.ui import View
+from dotenv import load_dotenv
 
 from bot.const.custom_types import Interaction
 from bot.const.games import current_games
 from bot.lobby.select import GameSelect
 
+load_dotenv()
 bot = Bot(command_prefix="/", intents=discord.Intents.all())
 logging.getLogger().setLevel(logging.DEBUG)
 
@@ -28,6 +30,7 @@ async def play(interaction: Interaction):
         view = View()
         view.add_item(dropdown)
         await interaction.response.send_message("Pick a game to play...", view=view, ephemeral=True, delete_after=600.0)
+
     else:
         await interaction.response.send_message(
             "There is already a game being played or organised in this channel!", ephemeral=True, delete_after=60.0

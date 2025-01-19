@@ -18,7 +18,7 @@ class Lobby(discord.Embed):
         self.game = game
         self.admin = admin
         self.name = name
-        self.players = {}
+        self.players: dict[str, Interaction] = {}
         self.file = discord.File(
             self.game.logo, filename=self.game.logo.name
         )
@@ -36,7 +36,7 @@ class Lobby(discord.Embed):
 
         super().__init__(title=name, description=description, url=url)
         self.set_author(name=admin.display_name)
-        self.add_to_lobby(self.admin)
+        self.add_to_lobby(interaction)
         self.set_image(url=f"attachment://{self.game.logo.name}")
 
     @property
@@ -50,9 +50,9 @@ class Lobby(discord.Embed):
 
         return view
 
-    def add_to_lobby(self, user: User | Member):
-        self.add_field(name=random.choice(self.game.emojis), value=user.display_name)
-        self.players[user.display_name] = user
+    def add_to_lobby(self, interaction: Interaction):
+        self.add_field(name=random.choice(self.game.emojis), value=interaction.user.display_name)
+        self.players[interaction.user.display_name] = interaction
 
     def remove_from_lobby(self, user: str) -> bool:
         try:
@@ -73,7 +73,7 @@ class Lobby(discord.Embed):
             await og_msg.delete()
         except (discord.errors.NotFound, discord.errors.Forbidden, discord.errors.HTTPException) as error:
             logging.warning(
-                f"[%s] - Could not delete lobby due to - %s",
+                "[%s] - Could not delete lobby due to - %s",
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 str(error)
             )

@@ -10,6 +10,7 @@ from discord import SelectOption, User
 
 from bot.const.custom_types import Interaction
 from bot.const.games import current_games
+from utils.coro_timeout import RunWithTO
 
 if TYPE_CHECKING:
     from bot.lobby import Lobby
@@ -22,7 +23,7 @@ class CancelGameButton(discord.ui.Button):
         self.lobby = lobby
         self.game = self.lobby.game
         super().__init__(
-            label=f"Cancel Game!", emoji="💩"
+            label="Cancel Game!", emoji="💩"
         )
 
     async def callback(self, interaction: Interaction):
@@ -32,7 +33,7 @@ class CancelGameButton(discord.ui.Button):
             pass
 
         await delete_message(interaction)
-        await self.lobby.interaction.channel.send(f"Game cancelled!")
+        await self.lobby.interaction.channel.send("Game cancelled!")
         await self.lobby.delete()
 
 
@@ -41,11 +42,12 @@ class StartGameButton(discord.ui.Button):
         self.lobby = lobby
         self.game = self.lobby.game
         super().__init__(
-            label=f"Start Game!", emoji="👍"
+            label="Start Game!", emoji="👍"
         )
 
     async def callback(self, interaction: Interaction):
         if len(self.lobby.players) >= self.game.min_players:
+            current_games.add(self.lobby.interaction.channel)
             game_interface = await self.game.game_interface.setup_game(interaction, self.lobby.players)
             name = self.lobby.name
             guild = self.lobby.interaction.guild
@@ -56,7 +58,7 @@ class StartGameButton(discord.ui.Button):
             await self.lobby.delete()
 
             logging.info(
-                f"[%s] - A game of %s has started in - %s: %s.",
+                "[%s] - A game of %s has started in - %s: %s.",
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 name,
                 guild,
@@ -64,10 +66,15 @@ class StartGameButton(discord.ui.Button):
             )
 
             await asyncio.gather(
-                *(player.send(f"Have fun in your game of {self.game.name}!") for player in
+                *(interaction.user.send(f"Have fun in your game of {self.game.name}!") for interaction in
                   game_interface.players.values())
             )
-            await game_interface.run()
+            game = RunWithTO(timeout_s=21600)(game_interface.run)
+            result = await game()
+            if not result:
+                await interaction.response.send_message(
+                    "You have spent longer than 6 hours in this game. It has now been ended."
+                )
 
         else:
             await interaction.response.send_message(
@@ -75,13 +82,18 @@ class StartGameButton(discord.ui.Button):
                 f"you need {self.lobby.game.min_players}-{self.lobby.game.max_players} to start."
             )
 
+        try:
+            current_games.remove(self.lobby.interaction.channel)
+        except KeyError:
+            pass
+
 
 class RemovePlayersDropdown(discord.ui.Select):
     def __init__(self, lobby: Lobby):
         self.lobby = lobby
 
         options = [
-            SelectOption(label=user.display_name) for user in self.lobby.players.values() if user != self.lobby.admin
+            SelectOption(label=interaction.user.display_name) for interaction in self.lobby.players.values() if interaction.user != self.lobby.admin
         ]
 
         if not options:
@@ -94,7 +106,7 @@ class RemovePlayersDropdown(discord.ui.Select):
     async def callback(self, interaction: Interaction):
         if len(self.lobby.players) < 1:
             await delete_message(interaction)
-            await self.lobby.interaction.channel.send(f"Game cancelled!")
+            await self.lobby.interaction.channel.send("Game cancelled!")
             return await self.lobby.delete()
 
         try:
@@ -106,7 +118,7 @@ class RemovePlayersDropdown(discord.ui.Select):
 
         if choice == EMPTY_LOBBY_TEXT:
             await interaction.response.send_message(
-                f"The empty lobby choice is not meant to be clicked you silly goose!", delete_after=10
+                "The empty lobby choice is not meant to be clicked you silly goose!", delete_after=10
             )
             await self.lobby.update()
         else:
@@ -123,7 +135,7 @@ class AdmitKickedPlayerButton(discord.ui.Button):
         self.user = user
         self.lobby = lobby
         super().__init__(
-            label=f"Admit to the Lobby", emoji="👍"
+            label="Admit to the Lobby", emoji="👍"
         )
 
     async def callback(self, interaction: Interaction):
@@ -146,7 +158,7 @@ class BanPlayerButton(discord.ui.Button):
     def __init__(self, lobby: Lobby, user: User):
         self.user = user
         self.lobby = lobby
-        super().__init__(label=f"Ban Player", emoji="💩", style=discord.ButtonStyle.red)
+        super().__init__(label="Ban Player", emoji="💩", style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: Interaction):
         self.lobby.banned_players[self.user.display_name] = self.user
@@ -161,7 +173,7 @@ async def delete_message(interaction: Interaction):
         await interaction.message.delete()
     except (discord.errors.NotFound, discord.errors.Forbidden, discord.errors.HTTPException) as error:
         logging.warning(
-            f"[%s] - Could not delete message due to - %s",
+            "[%s] - Could not delete message due to - %s",
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             str(error)
         )
