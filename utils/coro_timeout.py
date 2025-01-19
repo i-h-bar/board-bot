@@ -7,8 +7,8 @@ from typing import Callable, Awaitable, Self, Generator
 class RunWithTO[T]:
     __slots__ = ("coro", "_value", "timed_out", "args", "kwargs", "timeout_s")
 
-    def __init__(self: Self, coro: Callable[[...], Awaitable[T]], timeout_s: float | int = 5) -> None:
-        self.coro = coro
+    def __init__(self: Self, timeout_s: float | int = 5) -> None:
+        self.coro = None
         self._value = None
         self.timed_out = False
         self.timeout_s = timeout_s
@@ -18,14 +18,19 @@ class RunWithTO[T]:
     def __await__(self: Self) -> Generator[None, None, RunWithTO[T]]:
         return self.run().__await__()
 
-    def __call__(self, *args, **kwargs) -> RunWithTO[T]:
-        self.args = args
-        self.kwargs = kwargs
+    def __call__(self, coro: Callable[[...], Awaitable[T]]) -> Callable[[...], RunWithTO[T]]:
+        self.coro = coro
 
-        return self
+        def wrapper(*args, **kwargs) -> RunWithTO[T]:
+            self.args = args
+            self.kwargs = kwargs
+
+            return self
+
+        return wrapper
 
     def __bool__(self: Self) -> bool:
-        return self.timed_out
+        return not self.timed_out
 
     async def run(self) -> RunWithTO[T]:
         loop = asyncio.get_event_loop()
