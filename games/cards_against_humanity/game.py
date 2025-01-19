@@ -86,7 +86,7 @@ class CAH(GameInterface):
         view = View()
         view.add_item(czar_pick)
         try:
-            await self.card_czar.followup.send(f"The best answer...", view=view, ephemeral=True)
+            await self.card_czar.followup.send("The best answer...", view=view, ephemeral=True)
         except HTTPException:
             for choice in czar_pick.options:
                 print("Potential Invalid Emoji: ")

@@ -38,7 +38,7 @@ class CzarPick(discord.ui.Select):
         self.is_picking = True
         self.winner = None
         super().__init__(
-            placeholder=f"Select the best answer",
+            placeholder="Select the best answer",
             max_values=1,
             min_values=1,
             options=options
