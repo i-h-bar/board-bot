@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Callable, Awaitable, Self, Generator
+from typing import Callable, Self, Generator, Coroutine, Any
 
 
 class RunWithTO[T]:
@@ -18,7 +18,9 @@ class RunWithTO[T]:
     def __await__(self: Self) -> Generator[None, None, RunWithTO[T]]:
         return self.run().__await__()
 
-    def __call__(self, coro: Callable[[...], Awaitable[T]]) -> Callable[[...], RunWithTO[T]]:
+    def __call__(
+            self, coro: Callable[[], Coroutine[Any, Any, T]] | Callable[[...], Coroutine[Any, Any, T]]
+    ) -> Callable[[...], RunWithTO[T]]:
         self.coro = coro
 
         def wrapper(*args, **kwargs) -> RunWithTO[T]:
